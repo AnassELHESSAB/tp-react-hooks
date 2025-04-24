@@ -54,7 +54,16 @@ Pour chaque exercice :
 _Votre réponse pour l'exercice 1 :_
 ```
 Expliquez votre solution ici
-[Ajoutez vos captures d'écran]
+explicaction de l'implémentation :
+
+LanguageContext pour la traduction du placeholder
+
+useDebounce pour retarder l'exécution de la recherche
+
+Un effet qui se déclenche avec la valeur debounced
+
+Une prop onSearch pour communiquer avec le composant parent
+![Example 1 Screenshot](Ex1.png)
 ```
 
 ### Exercice 2 : Context et Internationalisation
