@@ -1,40 +1,56 @@
 import React, { useContext } from 'react';
-import { ThemeContext } from '../App';
+import { ThemeContext, LanguageContext } from '../App';
 import useProductSearch from '../hooks/useProductSearch';
 
 const ProductList = () => {
   const { isDarkTheme } = useContext(ThemeContext);
-  // TODO: Exercice 2.1 - Utiliser le LanguageContext pour les traductions
+  const { language } = useContext(LanguageContext);
   
   const { 
     products, 
     loading, 
     error,
-    // TODO: Exercice 4.1 - Récupérer la fonction de rechargement
-    // TODO: Exercice 4.2 - Récupérer les fonctions et états de pagination
+    reload,
+    currentPage,
+    totalPages,
+    nextPage,
+    previousPage
   } = useProductSearch();
-  
+
   if (loading) return (
     <div className="text-center my-4">
       <div className="spinner-border" role="status">
-        <span className="visually-hidden">Chargement...</span>
+        <span className="visually-hidden">
+          {language === 'fr' ? 'Chargement...' : 'Loading...'}
+        </span>
       </div>
     </div>
   );
-  
+
   if (error) return (
-    <div className="alert alert-danger" role="alert">
-      Erreur: {error}
+    <div className={`alert alert-danger ${isDarkTheme ? 'bg-dark text-danger' : ''}`} role="alert">
+      {language === 'fr' ? 'Erreur : ' : 'Error: '}{error}
     </div>
   );
-  
+
   return (
     <div>
-      {/* TODO: Exercice 4.1 - Ajouter le bouton de rechargement */}
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h3 className={`m-0 ${isDarkTheme ? 'text-light' : ''}`}>
+          {products.length} {language === 'fr' ? 'résultats' : 'results'}
+        </h3>
+        <button 
+          onClick={reload}
+          className={`btn ${isDarkTheme ? 'btn-outline-light' : 'btn-outline-dark'}`}
+        >
+          {language === 'fr' ? 'Recharger' : 'Reload'}
+        </button>
+      </div>
+
       <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         {products.map(product => (
           <div key={product.id} className="col">
-            <div className={`card h-100 ${isDarkTheme ? 'bg-dark text-light' : ''}`}>
+            <div className={`card h-100 ${isDarkTheme ? 'bg-secondary text-light' : ''}`}>
               {product.thumbnail && (
                 <img 
                   src={product.thumbnail} 
@@ -47,7 +63,7 @@ const ProductList = () => {
                 <h5 className="card-title">{product.title}</h5>
                 <p className="card-text">{product.description}</p>
                 <p className="card-text">
-                  <strong>Prix: </strong>
+                  <strong>{language === 'fr' ? 'Prix: ' : 'Price: '}</strong>
                   {product.price}€
                 </p>
               </div>
@@ -55,29 +71,38 @@ const ProductList = () => {
           </div>
         ))}
       </div>
-      
-      {/* TODO: Exercice 4.2 - Ajouter les contrôles de pagination */}
-      {/* Exemple de structure pour la pagination :
-      <nav className="mt-4">
-        <ul className="pagination justify-content-center">
-          <li className="page-item">
-            <button className="page-link" onClick={previousPage}>
-              Précédent
-            </button>
-          </li>
-          <li className="page-item">
-            <span className="page-link">
-              Page {currentPage} sur {totalPages}
-            </span>
-          </li>
-          <li className="page-item">
-            <button className="page-link" onClick={nextPage}>
-              Suivant
-            </button>
-          </li>
-        </ul>
-      </nav>
-      */}
+
+      {products.length > 0 && (
+        <nav className="mt-4">
+          <ul className="pagination justify-content-center">
+            <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+              <button 
+                className={`page-link ${isDarkTheme ? 'bg-dark text-light border-light' : ''}`}
+                onClick={previousPage}
+              >
+                {language === 'fr' ? 'Précédent' : 'Previous'}
+              </button>
+            </li>
+            
+            <li className="page-item">
+              <span className={`page-link ${isDarkTheme ? 'bg-dark text-light border-light' : ''}`}>
+                {language === 'fr' 
+                  ? `Page ${currentPage} sur ${totalPages}` 
+                  : `Page ${currentPage} of ${totalPages}`}
+              </span>
+            </li>
+
+            <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+              <button 
+                className={`page-link ${isDarkTheme ? 'bg-dark text-light border-light' : ''}`}
+                onClick={nextPage}
+              >
+                {language === 'fr' ? 'Suivant' : 'Next'}
+              </button>
+            </li>
+          </ul>
+        </nav>
+      )}
     </div>
   );
 };

@@ -1,41 +1,65 @@
 import { useState, useEffect } from 'react';
 
-// TODO: Exercice 3.1 - Créer le hook useDebounce
-// TODO: Exercice 3.2 - Créer le hook useLocalStorage
-
-const useProductSearch = () => {
+const useProductSearch = (searchTerm) => {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  // TODO: Exercice 4.2 - Ajouter l'état pour la pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [reloadTrigger, setReloadTrigger] = useState(0);
+
+  // Réinitialise la pagination quand la recherche change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   useEffect(() => {
+    const abortController = new AbortController();
+    
     const fetchProducts = async () => {
+      setLoading(true);
+      setError(null);
+      
       try {
-        // TODO: Exercice 4.2 - Modifier l'URL pour inclure les paramètres de pagination
-        const response = await fetch('https://api.daaif.net/products?delay=1000');
-        if (!response.ok) throw new Error('Erreur réseau');
+        const response = await fetch(
+          `https://dummyjson.com/products/search?q=${encodeURIComponent(searchTerm)}&limit=10&skip=${(currentPage - 1) * 10}`,
+          { signal: abortController.signal }
+        );
+        
+        if (!response.ok) throw new Error('Erreur de chargement');
+        
         const data = await response.json();
         setProducts(data.products);
-        setLoading(false);
+        setTotalPages(Math.ceil(data.total / 10));
       } catch (err) {
-        setError(err.message);
+        if (err.name !== 'AbortError') {
+          setError(err.message);
+        }
+      } finally {
         setLoading(false);
       }
     };
 
-    fetchProducts();
-  }, []); // TODO: Exercice 4.2 - Ajouter les dépendances pour la pagination
+    if (searchTerm || currentPage > 1) {
+      fetchProducts();
+    }
 
-  // TODO: Exercice 4.1 - Ajouter la fonction de rechargement
-  // TODO: Exercice 4.2 - Ajouter les fonctions pour la pagination
+    return () => abortController.abort();
+  }, [searchTerm, currentPage, reloadTrigger]);
 
-  return { 
-    products, 
-    loading, 
+  const reload = () => setReloadTrigger(prev => prev + 1);
+  const nextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages));
+  const previousPage = () => setCurrentPage(prev => Math.max(prev - 1, 1));
+
+  return {
+    products,
+    loading,
     error,
-    // TODO: Exercice 4.1 - Retourner la fonction de rechargement
-    // TODO: Exercice 4.2 - Retourner les fonctions et états de pagination
+    reload,
+    currentPage,
+    totalPages,
+    nextPage,
+    previousPage
   };
 };
 
